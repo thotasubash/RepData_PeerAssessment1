@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+
+<title>Loading and preprocessing the data</title>
+
+<script type="text/javascript">
+window.onload = function() {
+  var imgs = document.getElementsByTagName('img'), i, img;
+  for (i = 0; i < imgs.length; i++) {
+    img = imgs[i];
+    // center an image if it is the only element of its parent
+    if (img.parentElement.childElementCount === 1)
+      img.parentElement.style.textAlign = 'center';
+  }
+};
+</script>
+
+
+
+
+
+<style type="text/css">
+body, td {
+   font-family: sans-serif;
+   background-color: white;
+   font-size: 13px;
+}
+
+body {
+  max-width: 800px;
+  margin: auto;
+  padding: 1em;
+  line-height: 20px;
+}
+
+tt, code, pre {
+   font-family: 'DejaVu Sans Mono', 'Droid Sans Mono', 'Lucida Console', Consolas, Monaco, monospace;
+}
+
+h1 {
+   font-size:2.2em;
+}
+
+h2 {
+   font-size:1.8em;
+}
+
+h3 {
+   font-size:1.4em;
+}
+
+h4 {
+   font-size:1.0em;
+}
+
+h5 {
+   font-size:0.9em;
+}
+
+h6 {
+   font-size:0.8em;
+}
+
+a:visited {
+   color: rgb(50%, 0%, 50%);
+}
+
+pre, img {
+  max-width: 100%;
+}
+pre {
+  overflow-x: auto;
+}
+pre code {
+   display: block; padding: 0.5em;
+}
+
+code {
+  font-size: 92%;
+  border: 1px solid #ccc;
+}
+
+code[class] {
+  background-color: #F8F8F8;
+}
+
+table, td, th {
+  border: none;
+}
+
+blockquote {
+   color:#666666;
+   margin:0;
+   padding-left: 1em;
+   border-left: 0.5em #EEE solid;
+}
+
+hr {
+   height: 0px;
+   border-bottom: none;
+   border-top-width: thin;
+   border-top-style: dotted;
+   border-top-color: #999999;
+}
+
+@media print {
+   * {
+      background: transparent !important;
+      color: black !important;
+      filter:none !important;
+      -ms-filter: none !important;
+   }
+
+   body {
+      font-size:12pt;
+      max-width:100%;
+   }
+
+   a, a:visited {
+      text-decoration: underline;
+   }
+
+   hr {
+      visibility: hidden;
+      page-break-before: always;
+   }
+
+   pre, blockquote {
+      padding-right: 1em;
+      page-break-inside: avoid;
+   }
+
+   tr, img {
+      page-break-inside: avoid;
+   }
+
+   img {
+      max-width: 100% !important;
+   }
+
+   @page :left {
+      margin: 15mm 20mm 15mm 10mm;
+   }
+
+   @page :right {
+      margin: 15mm 10mm 15mm 20mm;
+   }
+
+   p, h2, h3 {
+      orphans: 3; widows: 3;
+   }
+
+   h2, h3 {
+      page-break-after: avoid;
+   }
+}
+</style>
+
+
+
+</head>
+
+<body>
+<h2>Loading and preprocessing the data</h2>
+
+<p>activity = read.csv(&ldquo;C:/Users/Thota/Documents/GitHub/RepData_PeerAssessment1/activity/activity.csv&rdquo;)</p>
+
+<h2>What is mean total number of steps taken per day?</h2>
+
+<h2>Calculating the total number of steps taken each day and stored in a variable</h2>
+
+<p>total_steps_each_day &lt;- aggregate(steps~date, data=activity, FUN=sum, na.rm=TRUE)</p>
+
+<h2>Generating the Histogram by each day</h2>
+
+<p>png(filename=&#39;plots/Assign1.png&#39;,width=480,height=480,units=&#39;px&#39;)
+hist(total_steps_each_day$steps)
+x&lt;-dev.off()</p>
+
+<p>total_steps_each_day_mean &lt;- mean(total_steps_each_day$steps)
+total_steps_each_day_median &lt;- median(total_steps_each_day$steps)</p>
+
+<h2>What is the average daily activity pattern?</h2>
+
+<h2>Make a time series plot (i.e. type = &ldquo;l&rdquo;) of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all days (y-axis)</h2>
+
+<p>five_minutes_average &lt;- aggregate(steps~interval, data=activity, FUN=mean, na.rm=TRUE)</p>
+
+<p>png(filename=&#39;plots/Assign2.png&#39;,width=480,height=480,units=&#39;px&#39;)
+plot(x = five_minutes_average$interval, y = five_minutes_average$steps, type = &ldquo;l&rdquo;) 
+x&lt;-dev.off()</p>
+
+<h2>Which 5-minute interval, on average across all the days in the dataset, contains the maximum number of steps?</h2>
+
+<p>max_steps &lt;- max(five_minutes_average$steps)
+for (i in 1:288) 
+{
+    if (five_minutes_average$steps[i] == max_steps)
+        five_minute_interval_at_max_steps &lt;- five_minutes_average$interval[i]
+}
+five_minute_interval_at_max_steps </p>
+
+<h2>Imputing missing values</h2>
+
+<p>##Calculate and report the total number of missing values in the dataset (i.e. the total number of rows with NAs)
+total_na &lt;- 0
+for (i in 1:17568)
+{
+    if(is.na(activity$steps[i])) 
+        total_na &lt;- total_na+1 
+}
+total_na</p>
+
+<p>##Devise a strategy for filling in all of the missing values in the dataset. The strategy does not need to be sophisticated.
+The strategy will be to fill in the dataset the with the mean of that 5 minute interval</p>
+
+<p>##Create a new dataset that is equal to the original dataset but with the missing data filled in.
+activity_filled_in &lt;- activity
+for (i in 1:17568) # loop to find the na
+{
+    if(is.na(activity_filled_in$steps[i])) # if steps is na store the pointer 
+    { 
+        five_minute_pointer &lt;- activity_filled_in$interval[i] #store the value of pointer to find the mean on five minute interval
+        for (j in 1:288)  # loop to find the value of pointer on the data frame of five minute interval
+        {
+            if (five_minutes_average$interval[j] == five_minute_pointer) # finding the value of mean of five minute interval data frame
+                activity_filled_in$steps[i] &lt;- five_minutes_average$steps[j] # replacing the na by the mean in that fime minute interval </p>
+
+<pre><code>    }
+}
+</code></pre>
+
+<p>}</p>
+
+<p>##Make a histogram of the total number of steps taken each day and Calculate and report the mean and median total number of steps taken per day. 
+total_steps_each_day_filled_in &lt;- aggregate(steps~date, data=activity_filled_in, FUN=sum, na.rm=TRUE)</p>
+
+<p>png(filename=&#39;plots/Assign3.png&#39;,width=480,height=480,units=&#39;px&#39;)
+hist(total_steps_each_day_filled_in$steps)
+x&lt;-dev.off()</p>
+
+<h2>Are there differences in activity patterns between weekdays and weekends?</h2>
+
+<p>##Create a new factor variable in the dataset with two levels â€“ â€œweekdayâ€ and â€œweekendâ€ indicating whether a given date is a weekday or weekend day.</p>
+
+<h3>creating a char vector (week_day)</h3>
+
+<p>week &lt;- wday(activity_filled_in$date)
+week_day &lt;- week
+for (i in 1:17568) # loop to find the na
+{
+    if(week[i] == 1)
+        week_day[i] &lt;- &#39;weekend&#39;
+    if(week[i] == 2)
+        week_day[i] &lt;- &#39;weekday&#39;
+    if(week[i] == 3)
+        week_day[i] &lt;- &#39;weekday&#39;
+    if(week[i] == 4)
+        week_day[i] &lt;- &#39;weekday&#39;
+    if(week[i] == 5)
+        week_day[i] &lt;- &#39;weekday&#39;
+    if(week[i] == 6)
+        week_day[i] &lt;- &#39;weekday&#39;
+    if(week[i] == 7)
+        week_day[i] &lt;- &#39;weekend&#39;
+}</p>
+
+<h3>Creating a new factor variable in the dataset &ldquo;activity_filled_in&rdquo;</h3>
+
+<p>activity_filled_in$weekday &lt;-week_day</p>
+
+<p>##Make a panel plot containing a time series plot (i.e. type = &ldquo;l&rdquo;) of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all weekday days or weekend days (y-axis).</p>
+
+<h1>finding the elements by &ldquo;weekday&rdquo; or &ldquo;weekend&rdquo;</h1>
+
+<p>weekday &lt;- grep(&ldquo;weekday&rdquo;,activity_filled_in$weekday)
+weekday_frame &lt;- activity_filled_in[weekday,]
+weekend_frame &lt;- activity_filled_in[-weekday,]</p>
+
+<h2>Make a time series plot of the 5-minute interval (x-axis) and the average number of steps taken,</h2>
+
+<h2>averaged across all days (yaxis)</h2>
+
+<p>five_minutes_average_weekday &lt;- aggregate(steps~interval, data=weekday_frame, FUN=mean, na.rm=TRUE)
+five_minutes_average_weekend &lt;- aggregate(steps~interval, data=weekend_frame, FUN=mean, na.rm=TRUE)</p>
+
+<p>png(filename=&#39;plots/Assign4.png&#39;,width=480,height=480,units=&#39;px&#39;)
+plot(x = five_minutes_average_weekday$interval, y = five_minutes_average_weekday$steps, type = &ldquo;l&rdquo;) 
+x&lt;-dev.off()</p>
+
+<p>png(filename=&#39;plots/Assign5.png&#39;,width=480,height=480,units=&#39;px&#39;)
+plot(x = five_minutes_average_weekend$interval, y = five_minutes_average_weekend$steps, type = &ldquo;l&rdquo;) 
+x&lt;-dev.off()</p>
+
+</body>
+
+</html>
